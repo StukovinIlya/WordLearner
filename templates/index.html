@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1 class="futuristic-title">Welcome, {{ current_user.username }}!</h1>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h3>Start Learning</h3>
+            <p>Continue your language learning journey.</p>
+            <a href="{{ url_for('learn') }}" class="futuristic-btn">Go to Learning</a>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Manage Words</h3>
+            <p>Add, edit or organize your vocabulary.</p>
+            <a href="{{ url_for('words') }}" class="futuristic-btn">Manage Words</a>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Your Progress</h3>
+            <p>View your learning statistics.</p>
+            <a href="{{ url_for('profile') }}" class="futuristic-btn">View Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

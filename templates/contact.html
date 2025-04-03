@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+<div class="contact-container">
+    <h1 class="futuristic-title">Contact Us</h1>
+
+    <div class="contact-content">
+        <div class="contact-info">
+            <h2>Get in Touch</h2>
+            <p><i class="icon">✉️</i> Email: support@wordlearner.com</p>
+            <p><i class="icon">🌐</i> Website: www.wordlearner.com</p>
+            <p><i class="icon">🕒</i> Support Hours: Mon-Fri, 9AM-5PM</p>
+        </div>
+
+        <form class="contact-form" method="POST" action="{{ url_for('contact') }}">
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" class="form-input" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" class="futuristic-btn">Send Message</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
