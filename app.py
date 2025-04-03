@@ -6,7 +6,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
-from models import db, User, Language
+from models import db, User, Language, WordGroup
 from flask_migrate import Migrate
 
 from set_password import set_password
@@ -115,10 +115,23 @@ def register():
         user.theme = 'light'
         db.session.add(user)
         db.session.commit()
-
         flash('Your account has been created! You can now log in', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
+
+
+@app.route('/learn')
+@login_required
+def learn():
+    group_id = request.args.get('group_id', type=int)
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+    return render_template('learn.html', groups=groups, selected_group=group_id)
+
+
+@app.route('/words', methods=['GET', 'POST'])
+@login_required
+def words():
+    return redirect(url_for('words'))
 
 
 @app.route('/privacy')
@@ -134,6 +147,19 @@ def terms():
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    return redirect(url_for('profile'))
 
 
 if __name__ == '__main__':

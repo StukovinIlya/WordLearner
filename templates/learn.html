@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Learn{% endblock %}
+
+{% block content %}
+<div class="learning-container">
+    <h1 class="futuristic-title">Learning Mode</h1>
+
+    <div class="group-selection">
+        <h3>Select Word Group</h3>
+        <form method="GET" action="">
+            <select name="group_id" class="futuristic-select" onchange="this.form.submit()">
+                <option value="">All Groups</option>
+                {% for group in groups %}
+                <option value="{{ group.id }}" {% if group.id== selected_group %}selected{% endif %}>{{ group.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="option-card">
+        <h3>Скоростной перевод</h3>
+        <p>15 секунд на все ответы!</p>
+        <a href="{{ url_for('timed_quiz', group_id=group_id) }}" class="futuristic-btn">Начать</a>
+    </div>
+    <div class="learning-options">
+        <div class="option-card">
+            <h3>Flashcards</h3>
+            <p>Learn with interactive flashcards.</p>
+            <a href="{{ url_for('flashcards', group_id=selected_group) }}" class="futuristic-btn">Start</a>
+        </div>
+
+        <div class="option-card">
+            <h3>Quiz</h3>
+            <p>Test your knowledge with a quiz.</p>
+            <a href="{{ url_for('quiz', group_id=selected_group) }}" class="futuristic-btn">Start</a>
+        </div>
+
+        <div class="option-card">
+            <h3>Writing Practice</h3>
+            <p>Practice writing translations.</p>
+            <a href="{{ url_for('writing_practice', group_id=selected_group) }}" class="futuristic-btn">Start</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
