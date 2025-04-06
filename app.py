@@ -1,12 +1,11 @@
 import random
 from datetime import datetime
-
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
-from models import db, User, Language, WordGroup
+from models import db, User, Language, WordGroup, UserStats, Word
 from flask_migrate import Migrate
 
 from set_password import set_password
@@ -57,12 +56,9 @@ class SettingsForm(FlaskForm):
     submit = SubmitField('Save Settings')
 
 
-
-
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
-
 
 
 with app.app_context():
@@ -83,7 +79,7 @@ with app.app_context():
 def home():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    return redirect(url_for('login'))
+    return render_template('login.html')
 
 
 @app.route('/index')
@@ -134,7 +130,77 @@ def learn():
 @app.route('/words', methods=['GET', 'POST'])
 @login_required
 def words():
-    return redirect(url_for('words'))
+    word_form = WordForm()
+    group_form = GroupForm()
+
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+    word_form.group.choices = [(group.id, group.name) for group in groups]
+    group_form.language.choices = [(language.id, language.name) for language in Language.query.all()]
+    group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
+
+    if word_form.validate_on_submit():
+        word = Word(
+            original=word_form.original.data,
+            translation=word_form.translation.data,
+            group_id=word_form.group.data
+        )
+        db.session.add(word)
+        db.session.commit()
+        flash('Word added successfully!', 'success')
+        return redirect('words', code=301)
+
+    if group_form.validate_on_submit():
+        parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
+        group = WordGroup(
+            name=group_form.name.data,
+            language_id=group_form.language.data,
+            user_id=current_user.id,
+            parent_group_id=parent_id
+        )
+        db.session.add(group)
+        db.session.commit()
+        flash('Group created successfully!', 'success')
+        return redirect('words', code=301)
+
+    if request.method == 'POST' and 'delete_word' in request.form:
+        word_id = request.form['delete_word']
+        word = Word.query.join(WordGroup).filter(
+            Word.id == word_id,
+            WordGroup.user_id == current_user.id
+        ).first()
+
+        if word:
+            db.session.delete(word)
+            db.session.commit()
+            flash('Word deleted successfully!', 'success')
+        else:
+            flash('Word not found or you don\'t have permission to delete it', 'error')
+        return redirect('words', code=301)
+
+    if request.method == 'POST' and 'delete_group' in request.form:
+        group_id = request.form['delete_group']
+        group = WordGroup.query.filter_by(
+            id=group_id,
+            user_id=current_user.id
+        ).first()
+
+        if group:
+            Word.query.filter_by(group_id=group.id).delete()
+            db.session.delete(group)
+            db.session.commit()
+            flash('Group and all its words deleted successfully!', 'success')
+        else:
+            flash('Group not found or you don\'t have permission to delete it', 'error')
+        return redirect('words', code=301)
+
+    words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+
+    return render_template('words.html',
+                           word_form=word_form,
+                           group_form=group_form,
+                           words=words,
+                           groups=groups)
 
 
 @app.route('/privacy')
@@ -156,13 +222,37 @@ def contact():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('home'))
+    return render_template('home.html')
 
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    return redirect(url_for('profile'))
+    return render_template('profile.html')
+
+
+@app.route('/timed_quiz', methods=['GET', 'POST'])
+@login_required
+def timed_quiz():
+    return render_template('timed_quiz.html')
+
+
+@app.route('/learn/flashcards')
+@login_required
+def flashcards():
+    return render_template('flashcards.html')
+
+
+@app.route('/quiz', methods=['GET', 'POST'])
+@login_required
+def quiz():
+    return render_template('quiz.html')
+
+
+@app.route('/writing', methods=['GET', 'POST'])
+@login_required
+def writing_practice():
+    return render_template('writing.html')
 
 
 if __name__ == '__main__':
