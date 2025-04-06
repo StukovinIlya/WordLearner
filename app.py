@@ -235,7 +235,7 @@ def timed_quiz():
     return render_template('timed_quiz.html')
 
 
-@app.route('/learn/flashcards')
+@app.route('/flashcards')
 @login_required
 def flashcards():
     return render_template('flashcards.html')
