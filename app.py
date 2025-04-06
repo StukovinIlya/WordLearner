@@ -139,11 +139,10 @@ def words():
     group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
 
     if word_form.validate_on_submit():
-        word = Word(
-            original=word_form.original.data,
-            translation=word_form.translation.data,
-            group_id=word_form.group.data
-        )
+        word = Word()
+        word.original = word_form.original.data
+        word.translation = word_form.translation.data
+        word.group_id = word_form.group.data
         db.session.add(word)
         db.session.commit()
         flash('Word added successfully!', 'success')
@@ -151,12 +150,11 @@ def words():
 
     if group_form.validate_on_submit():
         parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
-        group = WordGroup(
-            name=group_form.name.data,
-            language_id=group_form.language.data,
-            user_id=current_user.id,
-            parent_group_id=parent_id
-        )
+        group = WordGroup()
+        group.name = group_form.name.data
+        group.language_id = group_form.language.data
+        group.user_id = current_user.id
+        group.parent_group_id = parent_id
         db.session.add(group)
         db.session.commit()
         flash('Group created successfully!', 'success')
