@@ -127,41 +127,72 @@ def learn():
     groups = WordGroup.query.filter_by(user_id=current_user.id).all()
     return render_template('learn.html', groups=groups, selected_group=group_id)
 
-
-@app.route('/words', methods=['GET', 'POST'])
+@app.route('/words', methods=['GET'])
 @login_required
-def words():
+def get_words():
     word_form = WordForm()
     group_form = GroupForm()
 
     groups = WordGroup.query.filter_by(user_id=current_user.id).all()
     word_form.group.choices = [(group.id, group.name) for group in groups]
     group_form.language.choices = [(language.id, language.name) for language in Language.query.all()]
-    group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
+    group_form.parent_group.choices = [(0, 'Нет')] + [(group.id, group.name) for group in groups]
+
+    words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+
+    return render_template('words.html',
+                         word_form=word_form,
+                         group_form=group_form,
+                         words=words,
+                         groups=groups)
+@app.route('/words', methods=['POST'])
+@login_required
+def create_word():
+    word_form = WordForm()
+    group_form = GroupForm()
+
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+    word_form.group.choices = [(group.id, group.name) for group in groups]
+    group_form.language.choices = [(language.id, language.name) for language in Language.query.all()]
+    group_form.parent_group.choices = [(0, 'Нет')] + [(group.id, group.name) for group in groups]
 
     if word_form.validate_on_submit():
-        word = Word()
-        word.original = word_form.original.data
-        word.translation = word_form.translation.data
-        word.group_id = word_form.group.data
+        word = Word(
+            original=word_form.original.data,
+            translation=word_form.translation.data,
+            group_id=word_form.group.data
+        )
         db.session.add(word)
         db.session.commit()
-        flash('Word added successfully!', 'success')
-        return render_template('words', code=301)
+        flash('Слово успешно добавлено!', 'success')
+        return redirect(url_for('get_words'))
 
     if group_form.validate_on_submit():
         parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
-        group = WordGroup()
-        group.name = group_form.name.data
-        group.language_id = group_form.language.data
-        group.user_id = current_user.id
-        group.parent_group_id = parent_id
+        group = WordGroup(
+            name=group_form.name.data,
+            language_id=group_form.language.data,
+            user_id=current_user.id,
+            parent_group_id=parent_id
+        )
         db.session.add(group)
         db.session.commit()
-        flash('Group created successfully!', 'success')
-        return render_template('words', code=301)
+        flash('Группа успешно создана!', 'success')
+        return redirect(url_for('get_words'))
 
-    if request.method == 'POST' and 'delete_word' in request.form:
+    words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+    return render_template('words.html',
+                         word_form=word_form,
+                         group_form=group_form,
+                         words=words,
+                         groups=groups)
+
+@app.route('/words/delete', methods=['POST'])
+@login_required
+def delete_words():
+    if 'delete_word' in request.form:
         word_id = request.form['delete_word']
         word = Word.query.join(WordGroup).filter(
             Word.id == word_id,
@@ -171,12 +202,11 @@ def words():
         if word:
             db.session.delete(word)
             db.session.commit()
-            flash('Word deleted successfully!', 'success')
+            flash('Слово успешно удалено!', 'success')
         else:
-            flash('Word not found or you don\'t have permission to delete it', 'error')
-        return render_template('words', code=301)
+            flash('Слово не найдено или у вас нет прав на его удаление', 'error')
 
-    if request.method == 'POST' and 'delete_group' in request.form:
+    elif 'delete_group' in request.form:
         group_id = request.form['delete_group']
         group = WordGroup.query.filter_by(
             id=group_id,
@@ -187,20 +217,11 @@ def words():
             Word.query.filter_by(group_id=group.id).delete()
             db.session.delete(group)
             db.session.commit()
-            flash('Group and all its words deleted successfully!', 'success')
+            flash('Группа и все её слова успешно удалены!', 'success')
         else:
-            flash('Group not found or you don\'t have permission to delete it', 'error')
-        return render_template('words', code=301)
+            flash('Группа не найдена или у вас нет прав на её удаление', 'error')
 
-    words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
-    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
-
-    return render_template('words.html',
-                           word_form=word_form,
-                           group_form=group_form,
-                           words=words,
-                           groups=groups)
-
+    return redirect(url_for('get_words'))
 
 @app.route('/privacy')
 def privacy():
@@ -260,7 +281,7 @@ def timed_quiz():
 
     if not words:
         flash('No words found. Add words first.', 'warning')
-        return render_template(url_for('words'))
+        return redirect(url_for('get_words'))
 
     # Обработка отправки формы
     if request.method == 'POST':
@@ -316,7 +337,7 @@ def flashcards():
 
     if not words:
         flash('No words found in this group. Add some words first.', 'warning')
-        return redirect(url_for('words'))
+        return redirect(url_for('get_words'))
 
     return render_template('flashcards.html', words=words)
 
@@ -337,7 +358,7 @@ def quiz():
 
     if not words:
         flash('No words found in this group. Add some words first.', 'warning')
-        return render_template(url_for('words'))
+        return redirect(url_for('get_words'))
 
     if request.method == 'POST':
         show_results = True
@@ -402,7 +423,7 @@ def writing_practice():
 
     if not words:
         flash('No words found in this group. Add some words first.', 'warning')
-        return render_template(url_for('words'))
+        return redirect(url_for('get_words'))
 
     total_words = len(words)
 
