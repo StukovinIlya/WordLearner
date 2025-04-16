@@ -147,7 +147,7 @@ def words():
         db.session.add(word)
         db.session.commit()
         flash('Word added successfully!', 'success')
-        return redirect('words', code=301)
+        return render_template('words', code=301)
 
     if group_form.validate_on_submit():
         parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
@@ -159,7 +159,7 @@ def words():
         db.session.add(group)
         db.session.commit()
         flash('Group created successfully!', 'success')
-        return redirect('words', code=301)
+        return render_template('words', code=301)
 
     if request.method == 'POST' and 'delete_word' in request.form:
         word_id = request.form['delete_word']
@@ -174,7 +174,7 @@ def words():
             flash('Word deleted successfully!', 'success')
         else:
             flash('Word not found or you don\'t have permission to delete it', 'error')
-        return redirect('words', code=301)
+        return render_template('words', code=301)
 
     if request.method == 'POST' and 'delete_group' in request.form:
         group_id = request.form['delete_group']
@@ -190,7 +190,7 @@ def words():
             flash('Group and all its words deleted successfully!', 'success')
         else:
             flash('Group not found or you don\'t have permission to delete it', 'error')
-        return redirect('words', code=301)
+        return render_template('words', code=301)
 
     words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
     groups = WordGroup.query.filter_by(user_id=current_user.id).all()
@@ -260,7 +260,7 @@ def timed_quiz():
 
     if not words:
         flash('No words found. Add words first.', 'warning')
-        return redirect(url_for('words'))
+        return render_template(url_for('words'))
 
     # Обработка отправки формы
     if request.method == 'POST':
@@ -337,7 +337,7 @@ def quiz():
 
     if not words:
         flash('No words found in this group. Add some words first.', 'warning')
-        return redirect(url_for('words'))
+        return render_template(url_for('words'))
 
     if request.method == 'POST':
         show_results = True
@@ -402,7 +402,7 @@ def writing_practice():
 
     if not words:
         flash('No words found in this group. Add some words first.', 'warning')
-        return redirect(url_for('words'))
+        return render_template(url_for('words'))
 
     total_words = len(words)
 
