@@ -54,13 +54,6 @@
                     {% endfor %}
                 </div>
 
-                <div class="form-group">
-                    {{ group_form.language.label(class="form-label") }}
-                    {{ group_form.language(class="futuristic-select") }}
-                    {% for error in group_form.language.errors %}
-                        <span class="error">{{ error }}</span>
-                    {% endfor %}
-                </div>
 
                 <div class="form-group">
                     {{ group_form.parent_group.label(class="form-label") }}
@@ -120,7 +113,6 @@
             <thead>
                 <tr>
                     <th>Group Name</th>
-                    <th>Language</th>
                     <th>Word Count</th>
                     <th>Actions</th>
                 </tr>
@@ -129,7 +121,6 @@
                 {% for group in groups %}
                 <tr>
                     <td>{{ group.name }}</td>
-                    <td>{{ group.language.name }}</td>
                     <td>{{ group.words|length }}</td>
                     <td>
                         <form method="POST" action="{{ url_for('words') }}" style="display: inline;">

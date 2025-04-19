@@ -1,10 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Writing Practice{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="learning-container">
+    <h1 class="futuristic-title">Writing Practice</h1>
+
+    <div class="writing-controls">
+        <a href="{{ url_for('learn') }}" class="futuristic-btn">Back to Learning</a>
+    </div>
+
+    {% if show_results %}
+    <div class="results-summary">
+        <h3>Results: {{ correct_count }} out of {{ total_words }} correct</h3>
+        <a href="{{ url_for('writing_practice', group_id=group_id) }}" class="futuristic-btn">Try Again</a>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('writing_practice', group_id=group_id) }}" class="writing-form">
+        {% for word in words %}
+        <div class="writing-question">
+            <h4>{{ word.original }}</h4>
+            {% if show_results %}
+                <input type="text" name="answer_{{ word.id }}" value="{{ request.form.get('answer_' ~ word.id, '') }}"
+                       class="form-input {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}correct-input{% else %}incorrect-input{% endif %}"
+                       readonly>
+                <div class="result-message {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}correct-answer{% else %}incorrect-answer{% endif %}">
+                    {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}
+                        ✓ Correct!
+                    {% else %}
+                        ✗ Correct answer: {{ word.translation }}
+                    {% endif %}
+                </div>
+            {% else %}
+                <input type="text" name="answer_{{ word.id }}" placeholder="Type the translation..." class="form-input" required>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if not show_results %}
+        <button type="submit" class="futuristic-btn">Check Answers</button>
+        {% endif %}
+    </form>
+</div>
+
+{% endblock %}

@@ -20,7 +20,9 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-
+    def set_password(self, password):
+        password_hash = generate_password_hash(password)
+        return password_hash
 
 
 class UserStats(db.Model):
@@ -30,18 +32,9 @@ class UserStats(db.Model):
     last_activity = db.Column(db.DateTime)
 
 
-class Language(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    code = db.Column(db.String(5), nullable=False)
-
-    groups = db.relationship('WordGroup', backref='language', lazy=True)
-
-
 class WordGroup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     parent_group_id = db.Column(db.Integer, db.ForeignKey('word_group.id'))
 

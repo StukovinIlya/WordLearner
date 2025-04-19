@@ -3,10 +3,9 @@ from datetime import datetime
 from flask import Flask, render_template, redirect, flash, request, jsonify, session, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField
-from wtforms.validators import DataRequired, Length, Email, EqualTo
-from models import db, User, Language, WordGroup, UserStats, Word
+from models import db, User, WordGroup, UserStats, Word
 from flask_migrate import Migrate
+from forms import RegistrationForm, LoginForm, GroupForm, SettingsForm, WordForm
 
 from set_password import set_password
 
@@ -22,57 +21,9 @@ login_manager.login_view = 'login'
 migrate = Migrate(app, db)
 
 
-class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
-
-
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password',
-                                     validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Sign Up')
-
-
-class WordForm(FlaskForm):
-    original = StringField('Original Word', validators=[DataRequired()])
-    translation = StringField('Translation', validators=[DataRequired()])
-    group = SelectField('Group', coerce=int)
-    submit = SubmitField('Add Word')
-
-
-class GroupForm(FlaskForm):
-    name = StringField('Group Name', validators=[DataRequired()])
-    language = SelectField('Language', coerce=int)
-    parent_group = SelectField('Parent Group (optional)', coerce=int)
-    submit = SubmitField('Create Group')
-
-
-class SettingsForm(FlaskForm):
-    theme = SelectField('Theme', choices=[('light', 'Light'), ('dark', 'Dark')])
-    submit = SubmitField('Save Settings')
-
-
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
-
-
-with app.app_context():
-    db.create_all()
-    if not Language.query.first():
-        languages = [
-            Language(name='English', code='en'),
-            Language(name='Russian', code='ru'),
-            Language(name='French', code='fr'),
-            Language(name='German', code='de'),
-            Language(name='Spanish', code='es')
-        ]
-        db.session.bulk_save_objects(languages)
-        db.session.commit()
 
 
 @app.route('/')
@@ -99,7 +50,6 @@ def login():
             return redirect(url_for('index'))
         flash('Invalid email or password', 'danger')
 
-
     return render_template('login.html', form=form)
 
 
@@ -110,6 +60,7 @@ def register():
         user = User()
         user.username = form.username.data
         user.email = form.email.data
+        user.set_password(form.password.data)
         user.password_hash = set_password(form.password.data)  # Устанавливаем хэшированный пароль
         user.created_at = datetime.now()
         user.theme = 'light'
@@ -127,72 +78,39 @@ def learn():
     groups = WordGroup.query.filter_by(user_id=current_user.id).all()
     return render_template('learn.html', groups=groups, selected_group=group_id)
 
-@app.route('/words', methods=['GET'])
+
+@app.route('/words', methods=['GET', 'POST'])
 @login_required
-def get_words():
+def words():
     word_form = WordForm()
     group_form = GroupForm()
 
     groups = WordGroup.query.filter_by(user_id=current_user.id).all()
     word_form.group.choices = [(group.id, group.name) for group in groups]
-    group_form.language.choices = [(language.id, language.name) for language in Language.query.all()]
-    group_form.parent_group.choices = [(0, 'Нет')] + [(group.id, group.name) for group in groups]
-
-    words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
-    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
-
-    return render_template('words.html',
-                         word_form=word_form,
-                         group_form=group_form,
-                         words=words,
-                         groups=groups)
-@app.route('/words', methods=['POST'])
-@login_required
-def create_word():
-    word_form = WordForm()
-    group_form = GroupForm()
-
-    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
-    word_form.group.choices = [(group.id, group.name) for group in groups]
-    group_form.language.choices = [(language.id, language.name) for language in Language.query.all()]
-    group_form.parent_group.choices = [(0, 'Нет')] + [(group.id, group.name) for group in groups]
+    group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
 
     if word_form.validate_on_submit():
-        word = Word(
-            original=word_form.original.data,
-            translation=word_form.translation.data,
-            group_id=word_form.group.data
-        )
+        word = Word()
+        word.original = word_form.original.data
+        word.translation = word_form.translation.data
+        word.group_id = word_form.group.data
         db.session.add(word)
         db.session.commit()
-        flash('Слово успешно добавлено!', 'success')
-        return redirect(url_for('get_words'))
+        flash('Word added successfully!', 'success')
+        return redirect('words', code=301)
 
     if group_form.validate_on_submit():
         parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
-        group = WordGroup(
-            name=group_form.name.data,
-            language_id=group_form.language.data,
-            user_id=current_user.id,
-            parent_group_id=parent_id
-        )
+        group = WordGroup()
+        group.name = group_form.name.data
+        group.user_id = current_user.id
+        group.parent_group_id = parent_id
         db.session.add(group)
         db.session.commit()
-        flash('Группа успешно создана!', 'success')
-        return redirect(url_for('get_words'))
+        flash('Group created successfully!', 'success')
+        return redirect('words', code=301)
 
-    words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
-    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
-    return render_template('words.html',
-                         word_form=word_form,
-                         group_form=group_form,
-                         words=words,
-                         groups=groups)
-
-@app.route('/words/delete', methods=['POST'])
-@login_required
-def delete_words():
-    if 'delete_word' in request.form:
+    if request.method == 'POST' and 'delete_word' in request.form:
         word_id = request.form['delete_word']
         word = Word.query.join(WordGroup).filter(
             Word.id == word_id,
@@ -202,11 +120,12 @@ def delete_words():
         if word:
             db.session.delete(word)
             db.session.commit()
-            flash('Слово успешно удалено!', 'success')
+            flash('Word deleted successfully!', 'success')
         else:
-            flash('Слово не найдено или у вас нет прав на его удаление', 'error')
+            flash('Word not found or you don\'t have permission to delete it', 'error')
+        return redirect('words', code=301)
 
-    elif 'delete_group' in request.form:
+    if request.method == 'POST' and 'delete_group' in request.form:
         group_id = request.form['delete_group']
         group = WordGroup.query.filter_by(
             id=group_id,
@@ -217,11 +136,20 @@ def delete_words():
             Word.query.filter_by(group_id=group.id).delete()
             db.session.delete(group)
             db.session.commit()
-            flash('Группа и все её слова успешно удалены!', 'success')
+            flash('Group and all its words deleted successfully!', 'success')
         else:
-            flash('Группа не найдена или у вас нет прав на её удаление', 'error')
+            flash('Group not found or you don\'t have permission to delete it', 'error')
+        return redirect('words', code=301)
 
-    return redirect(url_for('get_words'))
+    words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+
+    return render_template('words.html',
+                           word_form=word_form,
+                           group_form=group_form,
+                           words=words,
+                           groups=groups)
+
 
 @app.route('/privacy')
 def privacy():
@@ -281,7 +209,7 @@ def timed_quiz():
 
     if not words:
         flash('No words found. Add words first.', 'warning')
-        return redirect(url_for('get_words'))
+        return redirect(url_for('words'))
 
     # Обработка отправки формы
     if request.method == 'POST':
@@ -337,7 +265,7 @@ def flashcards():
 
     if not words:
         flash('No words found in this group. Add some words first.', 'warning')
-        return redirect(url_for('get_words'))
+        return redirect(url_for('words'))
 
     return render_template('flashcards.html', words=words)
 
@@ -358,7 +286,7 @@ def quiz():
 
     if not words:
         flash('No words found in this group. Add some words first.', 'warning')
-        return redirect(url_for('get_words'))
+        return redirect(url_for('words'))
 
     if request.method == 'POST':
         show_results = True
@@ -423,7 +351,7 @@ def writing_practice():
 
     if not words:
         flash('No words found in this group. Add some words first.', 'warning')
-        return redirect(url_for('get_words'))
+        return redirect(url_for('words'))
 
     total_words = len(words)
 
