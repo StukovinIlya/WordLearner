@@ -1,10 +1,8 @@
 import random
 from datetime import datetime
-from flask import Flask, render_template, redirect, flash, request, jsonify, session, url_for
+from flask import Flask, render_template, redirect, flash, request, session, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from flask_wtf import FlaskForm
 from models import db, User, WordGroup, UserStats, Word
-from flask_migrate import Migrate
 from forms import RegistrationForm, LoginForm, GroupForm, SettingsForm, WordForm
 
 app = Flask(__name__)
@@ -16,8 +14,6 @@ db.init_app(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-
-migrate = Migrate(app, db)
 
 
 @login_manager.user_loader
