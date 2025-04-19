@@ -36,7 +36,6 @@ class WordGroup(db.Model):
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     parent_group_id = db.Column(db.Integer, db.ForeignKey('word_group.id'))
-
     parent = db.relationship('WordGroup', remote_side=[id], backref='subgroups')
     words = db.relationship('Word', backref='group', lazy=True)
 

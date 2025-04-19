@@ -1,10 +1,8 @@
 import random
 from datetime import datetime
-from flask import Flask, render_template, redirect, flash, request, jsonify, session, url_for
+from flask import Flask, render_template, redirect, flash, request, session, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from flask_wtf import FlaskForm
 from models import db, User, WordGroup, UserStats, Word
-from flask_migrate import Migrate
 from forms import RegistrationForm, LoginForm, GroupForm, SettingsForm, WordForm
 
 app = Flask(__name__)
@@ -16,7 +14,6 @@ db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-migrate = Migrate(app, db)
 
 
 @login_manager.user_loader
@@ -96,16 +93,16 @@ def words():
         flash('Word added successfully!', 'success')
         return redirect('words', code=301)
 
-    if group_form.validate_on_submit():
-        parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
-        group = WordGroup()
-        group.name = group_form.name.data
-        group.user_id = current_user.id
-        group.parent_group_id = parent_id
-        db.session.add(group)
-        db.session.commit()
-        flash('Group created successfully!', 'success')
-        return redirect('words', code=301)
+    # if group_form.validate_on_submit():
+    #     parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
+    #     group = WordGroup()
+    #     group.name = group_form.name.data
+    #     group.user_id = current_user.id
+    #     group.parent_group_id = parent_id
+    #     db.session.add(group)
+    #     db.session.commit()
+    #     flash('Group created successfully!', 'success')
+    #     return redirect('words', code=301)
 
     if request.method == 'POST' and 'delete_word' in request.form:
         word_id = request.form['delete_word']
@@ -146,6 +143,26 @@ def words():
                            group_form=group_form,
                            words=words,
                            groups=groups)
+
+
+@app.route('/create-group', methods=['POST'])
+@login_required
+def create_group():
+    group_form = GroupForm()
+    parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
+    group = WordGroup()
+    group.name = group_form.name.data
+    group.user_id = current_user.id
+    group.parent_group_id = parent_id
+    db.session.add(group)
+    db.session.commit()
+    flash('Group created successfully!', 'success')
+    return redirect('words', code=301)
+
+
+# @app.route('/create_group', methods=['POST'])
+# @login_required
+# def create_group():
 
 
 @app.route('/privacy')
