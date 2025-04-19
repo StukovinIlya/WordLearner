@@ -7,8 +7,6 @@ from models import db, User, WordGroup, UserStats, Word
 from flask_migrate import Migrate
 from forms import RegistrationForm, LoginForm, GroupForm, SettingsForm, WordForm
 
-from set_password import set_password
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'WordLearner-SECRET_KEY'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///wordlearner.db'
@@ -29,14 +27,14 @@ def load_user(user_id):
 @app.route('/')
 def home():
     if current_user.is_authenticated:
-        return redirect('index')
+        return redirect('home')
     return redirect(url_for('login', code=301))
 
 
-@app.route('/index')
+@app.route('/home')
 @login_required
 def index():
-    return render_template('index.html')
+    return render_template('home.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -47,7 +45,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
-            return redirect(url_for('index'))
+            return redirect(url_for('home'))
         flash('Invalid email or password', 'danger')
 
     return render_template('login.html', form=form)
@@ -61,7 +59,6 @@ def register():
         user.username = form.username.data
         user.email = form.email.data
         user.set_password(form.password.data)
-        user.password_hash = set_password(form.password.data)  # Устанавливаем хэшированный пароль
         user.created_at = datetime.now()
         user.theme = 'light'
         db.session.add(user)
