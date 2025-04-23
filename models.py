@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 
+from sa.annotated.pandas import unique
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
@@ -10,7 +11,7 @@ db = SQLAlchemy()
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), nullable=False, unique=True)
     password_hash = db.Column(db.String(128), nullable=False)  # Храним только хэш
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     theme = db.Column(db.String(10), default='light')
@@ -48,5 +49,5 @@ class Word(db.Model):
     translation = db.Column(db.String(100), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('word_group.id'), nullable=False)
     added_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_reviewed = db.Column(db.DateTime)
+    last_reviewed = db.Column(db.DateTime, nullable=True)
     difficulty = db.Column(db.Integer, default=1)

@@ -2,8 +2,7 @@ from models import User, db
 
 
 def migrate_users():
-    session = db.create_session()
-    session.add(
+    db.session.add(
         User(
             username='Guest',
             email='demo@gmail.com',
@@ -11,7 +10,7 @@ def migrate_users():
         )
         .set_password("123")
     )
-    session.add(
+    db.session.add(
         User(
             username='Ilya',
             email='ilya@mail.ru',
@@ -19,7 +18,7 @@ def migrate_users():
         )
         .set_password("123")
     )
-    session.add(
+    db.session.add(
         User(
             username='Andrey',
             email='andrey@mail.ru',
@@ -27,7 +26,7 @@ def migrate_users():
         )
         .set_password("123")
     )
-    session.add(
+    db.session.add(
         User(
             username='Danyil',
             email='danyil@gmail.com',
@@ -36,4 +35,4 @@ def migrate_users():
         .set_password("123")
     )
 
-    session.commit()
+    db.session.commit()
