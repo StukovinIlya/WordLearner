@@ -2,45 +2,113 @@
 {% block title %}Writing Practice{% endblock %}
 
 {% block content %}
-<div class="learning-container">
-    <h1 class="futuristic-title">Writing Practice</h1>
+    <div class="learning-container">
+        <h1 class="futuristic-title">Writing Practice</h1>
 
-    <div class="writing-controls">
-        <a href="{{ url_for('learn') }}" class="futuristic-btn">Back to Learning</a>
-    </div>
+        <div class="writing-controls">
+            <a href="{{ url_for('learn') }}" class="futuristic-btn">Back to Learning</a>
+        </div>
 
-    {% if show_results %}
-    <div class="results-summary">
-        <h3>Results: {{ correct_count }} out of {{ total_words }} correct</h3>
-        <a href="{{ url_for('writing_practice', group_id=group_id) }}" class="futuristic-btn">Try Again</a>
-    </div>
-    {% endif %}
+        {% if show_results %}
+            <div class="results-summary">
+                <h3>Results: {{ correct_count }} out of {{ total_words }} correct</h3>
+                <a href="{{ url_for('writing_practice', group_id=group_id) }}" class="futuristic-btn">Try Again</a>
+            </div>
+        {% endif %}
 
-    <form method="POST" action="{{ url_for('writing_practice', group_id=group_id) }}" class="writing-form">
-        {% for word in words %}
-        <div class="writing-question">
-            <h4>{{ word.original }}</h4>
-            {% if show_results %}
-                <input type="text" name="answer_{{ word.id }}" value="{{ request.form.get('answer_' ~ word.id, '') }}"
-                       class="form-input {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}correct-input{% else %}incorrect-input{% endif %}"
-                       readonly>
-                <div class="result-message {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}correct-answer{% else %}incorrect-answer{% endif %}">
-                    {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}
-                        ✓ Correct!
+        <form method="POST" action="{{ url_for('writing_practice', group_id=group_id) }}" class="writing-form">
+            {% for word in words %}
+                <div class="writing-question">
+                    <h4>{{ word.original }}</h4>
+                    {% if show_results %}
+                        <input type="text" name="answer_{{ word.id }}"
+                               value="{{ request.form.get('answer_' ~ word.id, '') }}"
+                               class="form-input {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}correct-input{% else %}incorrect-input{% endif %}"
+                               readonly>
+                        <div class="result-message {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}correct-answer{% else %}incorrect-answer{% endif %}">
+                            {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}
+                                ✓ Correct!
+                            {% else %}
+                                ✗ Correct answer: {{ word.translation }}
+                            {% endif %}
+                        </div>
                     {% else %}
-                        ✗ Correct answer: {{ word.translation }}
+                        <input type="text" name="answer_{{ word.id }}" placeholder="Type the translation..."
+                               class="form-input" required>
                     {% endif %}
                 </div>
-            {% else %}
-                <input type="text" name="answer_{{ word.id }}" placeholder="Type the translation..." class="form-input" required>
+            {% endfor %}
+
+            {% if not show_results %}
+                <button type="submit" class="futuristic-btn">Check Answers</button>
             {% endif %}
-        </div>
-        {% endfor %}
+        </form>
+    </div>
+    <style>
+        .writing-controls {
+            margin-bottom: 20px;
+        }
 
-        {% if not show_results %}
-        <button type="submit" class="futuristic-btn">Check Answers</button>
-        {% endif %}
-    </form>
-</div>
+        .results-summary {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            text-align: center;
+        }
 
+        .writing-question {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .writing-question h4 {
+            margin-bottom: 15px;
+        }
+
+        .result-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 500;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .correct-answer {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success-color);
+            border-left: 3px solid var(--success-color);
+        }
+
+        .incorrect-answer {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--error-color);
+            border-left: 3px solid var(--error-color);
+        }
+
+        .correct-input {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 3px solid var(--success-color);
+        }
+
+        .incorrect-input {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 3px solid var(--error-color);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 {% endblock %}

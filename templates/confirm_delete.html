@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<div class="confirm-container">
+    <h2>Confirm Deletion</h2>
+    <p>Are you sure you want to delete the word "{{ word.original }}"?</p>
+
+    <form method="POST" action="{{ url_for('delete_word', word_id=word.id) }}">
+        <button type="submit" class="futuristic-btn delete-btn">Yes, Delete</button>
+        <a href="{{ url_for('words') }}" class="futuristic-btn">Cancel</a>
+    </form>
+</div>
+
+<style>
+.confirm-container {
+    max-width: 500px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    text-align: center;
+}
+
+.delete-btn {
+    background-color: var(--error-color);
+    color: white;
+    margin-right: 10px;
+}
+
+.delete-btn:hover {
+    background-color: darken(var(--error-color), 10%);
+}
+</style>
+{% endblock %}

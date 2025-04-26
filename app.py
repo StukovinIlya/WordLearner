@@ -13,6 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///wordlearner.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -58,7 +59,7 @@ def register():
         user = User()
         user.username = form.username.data
         user.email = form.email.data
-        user.set_password(form.password.data)
+        user.password_hash = user.set_password(form.password.data)
         user.created_at = datetime.now()
         user.theme = 'light'
         db.session.add(user)
@@ -86,61 +87,72 @@ def words():
     word_form.group.choices = [(group.id, group.name) for group in groups]
     group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
 
-    if word_form.validate_on_submit():
-        word = Word()
-        word.original = word_form.original.data
-        word.translation = word_form.translation.data
-        word.group_id = word_form.group.data
-        db.session.add(word)
-        db.session.commit()
-        flash('Word added successfully!', 'success')
-        return redirect('words', code=301)
+    if request.method == 'GET':
+        words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
+        groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+        return render_template('words.html',
+                               word_form=word_form,
+                               group_form=group_form,
+                               words=words,
+                               groups=groups)
 
-    if group_form.validate_on_submit():
-        parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
-        group = WordGroup()
-        group.name = group_form.name.data
-        group.user_id = current_user.id
-        group.parent_group_id = parent_id
-        db.session.add(group)
-        db.session.commit()
-        flash('Group created successfully!', 'success')
-        return redirect('words', code=301)
-
-    if request.method == 'POST' and 'delete_word' in request.form:
-        word_id = request.form['delete_word']
-        word = Word.query.join(WordGroup).filter(
-            Word.id == word_id,
-            WordGroup.user_id == current_user.id
-        ).first()
-
-        if word:
-            db.session.delete(word)
+    if request.method == 'POST':
+        if word_form.validate_on_submit() and 'original' in request.form:
+            word = Word(
+                original=word_form.original.data,
+                translation=word_form.translation.data,
+                group_id=word_form.group.data
+            )
+            db.session.add(word)
             db.session.commit()
-            flash('Word deleted successfully!', 'success')
-        else:
-            flash('Word not found or you don\'t have permission to delete it', 'error')
-        return redirect('words', code=301)
+            flash('Слово добавлено успешно!', 'success')
+            return redirect(url_for('words'))
 
-    if request.method == 'POST' and 'delete_group' in request.form:
-        group_id = request.form['delete_group']
-        group = WordGroup.query.filter_by(
-            id=group_id,
-            user_id=current_user.id
-        ).first()
-
-        if group:
-            Word.query.filter_by(group_id=group.id).delete()
-            db.session.delete(group)
+        elif group_form.validate_on_submit() and 'name' in request.form:
+            parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
+            group = WordGroup(
+                name=group_form.name.data,
+                user_id=current_user.id,
+                parent_group_id=parent_id
+            )
+            db.session.add(group)
             db.session.commit()
-            flash('Group and all its words deleted successfully!', 'success')
-        else:
-            flash('Group not found or you don\'t have permission to delete it', 'error')
-        return redirect('words', code=301)
+            flash('Группа создана успешно!', 'success')
+            return redirect(url_for('words'))
+
+        elif 'delete_word' in request.form:
+            word_id = request.form['delete_word']
+            word = Word.query.join(WordGroup).filter(
+                Word.id == word_id,
+                WordGroup.user_id == current_user.id
+            ).first()
+
+            if word:
+                db.session.delete(word)
+                db.session.commit()
+                flash('Слово удалено успешно!', 'success')
+            else:
+                flash('Слово не найдено или нет прав для удаления', 'error')
+            return redirect(url_for('words'))
+
+        elif 'delete_group' in request.form:
+            group_id = request.form['delete_group']
+            group = WordGroup.query.filter_by(
+                id=group_id,
+                user_id=current_user.id
+            ).first()
+
+            if group:
+                Word.query.filter_by(group_id=group.id).delete()
+                db.session.delete(group)
+                db.session.commit()
+                flash('Группа и все её слова удалены успешно!', 'success')
+            else:
+                flash('Группа не найдена или нет прав для удаления', 'error')
+            return redirect(url_for('words'))
 
     words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
     groups = WordGroup.query.filter_by(user_id=current_user.id).all()
-
     return render_template('words.html',
                            word_form=word_form,
                            group_form=group_form,
@@ -198,7 +210,6 @@ def profile():
 def timed_quiz():
     group_id = request.args.get('group_id', type=int)
 
-    # Получаем слова из выбранной группы
     if group_id:
         words = Word.query.filter_by(group_id=group_id).all()
     else:
@@ -208,7 +219,6 @@ def timed_quiz():
         flash('No words found. Add words first.', 'warning')
         return redirect(url_for('words'))
 
-    # Обработка отправки формы
     if request.method == 'POST':
         score = 0
         quiz_words = session.get('quiz_words', [])
@@ -218,7 +228,6 @@ def timed_quiz():
             if user_answer == word['translation'].lower():
                 score += 1
 
-        # Обновляем статистику
         stats = UserStats.query.filter_by(user_id=current_user.id).first()
         if stats:
             stats.words_learned += score
@@ -230,7 +239,6 @@ def timed_quiz():
                                total=len(quiz_words),
                                group_id=group_id)
 
-    # Подготовка 5 случайных слов (меньше для ручного ввода)
     quiz_words = []
     selected_words = random.sample(words, min(5, len(words)))
 

@@ -2,30 +2,54 @@
 {% block title %}Privacy Policy{% endblock %}
 
 {% block content %}
-<div class="policy-container">
-    <h1 class="futuristic-title">Privacy Policy</h1>
+    <div class="policy-container">
+        <h1 class="futuristic-title">Privacy Policy</h1>
 
-    <div class="policy-content">
-        <section>
-            <h2>1. Information We Collect</h2>
-            <p>We collect information you provide directly when you register, use our services, or communicate with us.</p>
-        </section>
+        <div class="policy-content">
+            <section>
+                <h2>1. Information We Collect</h2>
+                <p>We collect information you provide directly when you register, use our services, or communicate with
+                    us.</p>
+            </section>
 
-        <section>
-            <h2>2. How We Use Your Information</h2>
-            <p>We use the information to provide and improve our services, personalize your experience, and communicate with you.</p>
-        </section>
+            <section>
+                <h2>2. How We Use Your Information</h2>
+                <p>We use the information to provide and improve our services, personalize your experience, and
+                    communicate with you.</p>
+            </section>
 
-        <section>
-            <h2>3. Information Sharing</h2>
-            <p>We do not sell your personal information. We may share it with service providers who assist us in our operations.</p>
-        </section>
+            <section>
+                <h2>3. Information Sharing</h2>
+                <p>We do not sell your personal information. We may share it with service providers who assist us in our
+                    operations.</p>
+            </section>
 
-        <section>
-            <h2>4. Security</h2>
-            <p>We implement security measures to protect your information, but no system is 100% secure.</p>
-        </section>
+            <section>
+                <h2>4. Security</h2>
+                <p>We implement security measures to protect your information, but no system is 100% secure.</p>
+            </section>
+        </div>
     </div>
-</div>
+    <style>
+        .policy-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
 
+        .policy-content section {
+            margin-bottom: 30px;
+        }
+
+        .policy-content h2 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .policy-content p {
+            line-height: 1.6;
+            color: var(--text-light);
+        }
+    </style>
 {% endblock %}

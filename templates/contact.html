@@ -2,36 +2,77 @@
 {% block title %}Contact Us{% endblock %}
 
 {% block content %}
-<div class="contact-container">
-    <h1 class="futuristic-title">Contact Us</h1>
+    <div class="contact-container">
+        <h1 class="futuristic-title">Contact Us</h1>
 
-    <div class="contact-content">
-        <div class="contact-info">
-            <h2>Get in Touch</h2>
-            <p><i class="icon">✉️</i> Email: support@wordlearner.com</p>
-            <p><i class="icon">🌐</i> Website: www.wordlearner.com</p>
-            <p><i class="icon">🕒</i> Support Hours: Mon-Fri, 9AM-5PM</p>
+        <div class="contact-content">
+            <div class="contact-info">
+                <h2>Get in Touch</h2>
+                <p><i class="icon">✉️</i> Email: support@wordlearner.com</p>
+                <p><i class="icon">🌐</i> Website: www.wordlearner.com</p>
+                <p><i class="icon">🕒</i> Support Hours: Mon-Fri, 9AM-5PM</p>
+            </div>
+
+            <form class="contact-form" method="POST" action="{{ url_for('contact') }}">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" class="form-input" rows="5" required></textarea>
+                </div>
+
+                <button type="submit" class="futuristic-btn">Send Message</button>
+            </form>
         </div>
-
-        <form class="contact-form" method="POST" action="{{ url_for('contact') }}">
-            <div class="form-group">
-                <label for="name">Your Name</label>
-                <input type="text" id="name" name="name" class="form-input" required>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" class="form-input" required>
-            </div>
-
-            <div class="form-group">
-                <label for="message">Message</label>
-                <textarea id="message" name="message" class="form-input" rows="5" required></textarea>
-            </div>
-
-            <button type="submit" class="futuristic-btn">Send Message</button>
-        </form>
     </div>
-</div>
+    <style>
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
 
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .contact-info h2 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .contact-info p {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .contact-form {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        @media (max-width: 768px) {
+            .contact-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 {% endblock %}

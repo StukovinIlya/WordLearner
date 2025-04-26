@@ -2,36 +2,83 @@
 {% block title %}Timed Quiz{% endblock %}
 
 {% block content %}
-<div class="quiz-container">
-    <h1 class="futuristic-title">Translation Challenge</h1>
-    <h3>У вас есть 15 секунд на все ответы!</h3>
+    <div class="quiz-container">
+        <h1 class="futuristic-title">Translation Challenge</h1>
+        <h3>У вас есть 15 секунд на все ответы!</h3>
 
-    <!-- Авто-отправка через 15 секунд -->
-    <meta http-equiv="refresh" content="15;url={{ url_for('timed_quiz', group_id=group_id) }}">
+        <!-- Авто-отправка через 15 секунд -->
+        <meta http-equiv="refresh" content="15;url={{ url_for('timed_quiz', group_id=group_id) }}">
 
-    <div class="time-warning">
-        <p>⏱️ Форма отправится автоматически через 15 секунд!</p>
-    </div>
+        <div class="time-warning">
+            <p>⏱️ Форма отправится автоматически через 15 секунд!</p>
+        </div>
 
-    <form method="POST" action="{{ url_for('timed_quiz', group_id=group_id) }}">
-        <div class="quiz-words">
-            {% for word in words %}
-            <div class="quiz-item">
-                <div class="word-original">{{ word.original }}</div>
-                <input type="text"
-                       name="word_{{ word.id }}"
-                       class="form-input"
-                       placeholder="Введите перевод..."
-                       required
-                       autofocus{% if loop.first %} autofocus{% endif %}>
+        <form method="POST" action="{{ url_for('timed_quiz', group_id=group_id) }}">
+            <div class="quiz-words">
+                {% for word in words %}
+                    <div class="quiz-item">
+                        <div class="word-original">{{ word.original }}</div>
+                        <input type="text"
+                               name="word_{{ word.id }}"
+                               class="form-input"
+                               placeholder="Введите перевод..."
+                               required
+                               autofocus{% if loop.first %} autofocus{% endif %}>
+                    </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
 
-        <div class="form-actions">
-            <button type="submit" class="futuristic-btn">Проверить ответы</button>
-        </div>
-    </form>
-</div>
+            <div class="form-actions">
+                <button type="submit" class="futuristic-btn">Проверить ответы</button>
+            </div>
+        </form>
+    </div>
+    <style>
+        .quiz-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
+        .time-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 15px 0;
+            text-align: center;
+            border-left: 4px solid #ffeeba;
+        }
+
+        .quiz-words {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-item {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        .word-original {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+        }
+    </style>
 {% endblock %}
