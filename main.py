@@ -73,36 +73,6 @@ def learn():
     return render_template('learn.html', groups=groups, selected_group=group_id)
 
 
-@app.route('/words', methods=['POST'])
-@login_required
-def words():
-    word_form = WordForm()
-    group_form = GroupForm()
-
-    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
-    word_form.group.choices = [(group.id, group.name) for group in groups]
-    group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
-
-    if request.method == 'POST':
-        if 'delete_group' in request.form:
-            group_id = request.form['delete_group']
-            group = WordGroup.query.filter_by(
-                id=group_id,
-                user_id=current_user.id
-            ).first()
-
-            if group:
-                Word.query.filter_by(group_id=group.id).delete()
-                db.session.delete(group)
-                db.session.commit()
-                flash('Группа и все её слова удалены успешно!', 'success')
-            else:
-                flash('Группа не найдена или нет прав для удаления', 'error')
-            return redirect(url_for('words'))
-
-    return get_words()
-
-
 @app.route('/words', methods=['GET'])
 def get_words() -> str:
     word_form = WordForm()
@@ -127,7 +97,7 @@ def create_word() -> Response:
     groups = WordGroup.query.filter_by(user_id=current_user.id).all()
     word_form.group.choices = [(group.id, group.name) for group in groups]
     if not word_form.validate_on_submit() or 'original' not in request.form:
-        flash('Ошибка добавления!', 'error')
+        flash('Adding error!', 'error')
         return redirect('/words')
     word = Word(
         original=word_form.original.data,
@@ -136,32 +106,11 @@ def create_word() -> Response:
     )
     db.session.add(word)
     db.session.commit()
-    flash('Слово добавлено успешно!', 'success')
+    flash('The word was added successfully!', 'success')
     return redirect('/words')
 
 
-@app.route('/group', methods=['POST'])
-def create_group() -> Response:
-    group_form = GroupForm()
-
-    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
-    group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
-    if not group_form.validate_on_submit() or 'name' not in request.form:
-        flash('Ошибка добавления!', 'error')
-        return redirect(url_for('words'))
-    parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
-    group = WordGroup(
-        name=group_form.name.data,
-        user_id=current_user.id,
-        parent_group_id=parent_id
-    )
-    db.session.add(group)
-    db.session.commit()
-    flash('Группа создана успешно!', 'success')
-    return redirect(url_for('words'))
-
-
-@app.route('/word', methods=['DELETE'])
+@app.route('/word-delete', methods=['POST'])
 def delete_word() -> Response:
     if 'delete_word' not in request.form:
         return redirect(url_for('words'))
@@ -172,11 +121,56 @@ def delete_word() -> Response:
     ).first()
 
     if not word:
-        flash('Слово не найдено или нет прав для удаления', 'error')
+        flash('The word was not found or there are no rights to delete it.', 'error')
         return redirect(url_for('words'))
     db.session.delete(word)
     db.session.commit()
-    flash('Слово удалено успешно!', 'success')
+    flash('The word was deleted successfully!', 'success')
+    return redirect(url_for('words'))
+
+
+@app.route('/group', methods=['POST'])
+def create_group() -> Response:
+    group_form = GroupForm()
+
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+    group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
+    if not group_form.validate_on_submit() or 'name' not in request.form:
+        flash('Adding error!', 'error')
+        return redirect(url_for('words'))
+    parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
+    group = WordGroup(
+        name=group_form.name.data,
+        user_id=current_user.id,
+        parent_group_id=parent_id
+    )
+    db.session.add(group)
+    db.session.commit()
+    flash('The group was created successfully!', 'success')
+    return redirect(url_for('words'))
+
+
+@app.route('/group-delete', methods=['POST'])
+def delete_group() -> Response:
+    group_form = GroupForm()
+
+    groups = WordGroup.query.filter_by(user_id=current_user.id).all()
+    group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
+    if 'delete_group' not in request.form:
+        return redirect(url_for('words'))
+    group_id = request.form['delete_group']
+    group = WordGroup.query.filter_by(
+        id=group_id,
+        user_id=current_user.id
+    ).first()
+
+    if not group:
+        flash('The group was not found or there are no rights to delete it.', 'error')
+        return redirect(url_for('words'))
+    Word.query.filter_by(group_id=group.id).delete()
+    db.session.delete(group)
+    db.session.commit()
+    flash('The group and all its words have been deleted successfully!', 'success')
     return redirect(url_for('words'))
 
 
