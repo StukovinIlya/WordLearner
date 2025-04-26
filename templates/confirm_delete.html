@@ -6,9 +6,9 @@
     <h2>Confirm Deletion</h2>
     <p>Are you sure you want to delete the word "{{ word.original }}"?</p>
 
-    <form method="POST" action="{{ url_for('delete_word', word_id=word.id) }}">
+    <form method="POST" action="{{ url_for('words_api.delete_word', word_id=word.id) }}">
         <button type="submit" class="futuristic-btn delete-btn">Yes, Delete</button>
-        <a href="{{ url_for('words') }}" class="futuristic-btn">Cancel</a>
+        <a href="{{ url_for('words_api.get_words') }}" class="futuristic-btn">Cancel</a>
     </form>
 </div>
 

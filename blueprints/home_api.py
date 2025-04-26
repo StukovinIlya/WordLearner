@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import flask
+import pytz
 from flask import render_template, flash, redirect, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
@@ -53,6 +54,10 @@ def register():
         user.theme = 'light'
         db.session.add(user)
         db.session.commit()
+        stats = UserStats()
+        stats.user_id = user.id
+        db.session.add(stats)
+        db.session.commit()
         flash('Your account has been created! You can now log in', 'success')
         return redirect('login')
     return render_template('register.html', form=form)
@@ -84,20 +89,13 @@ def logout():
 @login_required
 def profile():
     stats = UserStats.query.filter_by(user_id=current_user.id).first()
+    if stats and stats.last_activity:
+        utc_time = stats.last_activity.replace(tzinfo=pytz.utc)
+        msk_time = utc_time.astimezone(pytz.timezone('Europe/Moscow'))
+        stats.last_activity = msk_time
     word_count = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).count()
     group_count = WordGroup.query.filter_by(user_id=current_user.id).count()
-
-    form = SettingsForm()
-    if form.validate_on_submit():
-        current_user.theme = form.theme.data
-        db.session.commit()
-        flash('Settings saved successfully!', 'success')
-        return redirect(url_for('home_api.profile'))
-
-    form.theme.data = current_user.theme
-
     return render_template('profile.html',
                            stats=stats,
                            word_count=word_count,
-                           group_count=group_count,
-                           form=form)
+                           group_count=group_count)

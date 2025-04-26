@@ -7,19 +7,36 @@
 
         <div class="writing-controls">
             <a href="{{ url_for('learn_api.learn') }}" class="futuristic-btn">Back to Learning</a>
+            {% if current_group %}
+                <div class="group-info">
+                    <h3>Practice Group: {{ current_group.name }}</h3>
+                    <p>Total words: {{ total_words }} (including subgroups)</p>
+                </div>
+            {% endif %}
         </div>
 
         {% if show_results %}
             <div class="results-summary">
-                <h3>Results: {{ correct_count }} out of {{ total_words }} correct</h3>
-                <a href="{{ url_for('learn_api.writing_practice', group_id=group_id) }}" class="futuristic-btn">Try Again</a>
+                <h3>Results: {{ correct_count }} out of {{ total_words }} correct
+                    ({{ (correct_count/total_words*100)|round }}%)</h3>
+                <div class="progress-bar">
+                    <div class="progress" style="width: {{ (correct_count/total_words*100)|round }}%"></div>
+                </div>
+                <a href="{{ url_for('learn_api.writing_practice', group_id=group_id) }}" class="futuristic-btn">Try
+                    Again</a>
             </div>
         {% endif %}
 
-        <form method="POST" action="{{ url_for('learn_api.writing_practice', group_id=group_id) }}" class="writing-form">
+        <form method="POST" action="{{ url_for('learn_api.writing_practice', group_id=group_id) }}"
+              class="writing-form">
+            <input type="hidden" name="group_id" value="{{ group_id }}">
+
             {% for word in words %}
                 <div class="writing-question">
-                    <h4>{{ word.original }}</h4>
+                    <div class="question-header">
+                        <h4>{{ word.original }}</h4>
+                        <span class="group-tag">{{ word.group.name }}</span>
+                    </div>
                     {% if show_results %}
                         <input type="text" name="answer_{{ word.id }}"
                                value="{{ request.form.get('answer_' ~ word.id, '') }}"
@@ -29,7 +46,7 @@
                             {% if request.form.get('answer_' ~ word.id, '').lower() == word.equivalent.lower() %}
                                 ✓ Correct!
                             {% else %}
-                                ✗ Correct answer: {{ word.equivalent }}
+                                ✗ Correct answer: <strong>{{ word.equivalent }}</strong>
                             {% endif %}
                         </div>
                     {% else %}
@@ -40,13 +57,38 @@
             {% endfor %}
 
             {% if not show_results %}
-                <button type="submit" class="futuristic-btn">Check Answers</button>
+                <div class="form-footer">
+                    <button type="submit" class="futuristic-btn">Check Answers</button>
+                </div>
             {% endif %}
         </form>
     </div>
     <style>
         .writing-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .group-info {
+            background-color: var(--card-bg);
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .group-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+        }
+
+        .group-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-light);
         }
 
         .results-summary {
@@ -58,6 +100,20 @@
             text-align: center;
         }
 
+        .progress-bar {
+            height: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--success-color);
+            transition: width 0.5s ease;
+        }
+
         .writing-question {
             background-color: var(--card-bg);
             padding: 20px;
@@ -66,8 +122,19 @@
             box-shadow: 0 4px 15px var(--shadow-color);
         }
 
-        .writing-question h4 {
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
+        }
+
+        .group-tag {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
         }
 
         .result-message {
@@ -100,6 +167,11 @@
             border-left: 3px solid var(--error-color);
         }
 
+        .form-footer {
+            text-align: center;
+            margin-top: 30px;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -108,6 +180,17 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .writing-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .writing-question {
+                padding: 15px;
             }
         }
     </style>

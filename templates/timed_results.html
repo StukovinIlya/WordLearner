@@ -3,58 +3,80 @@
 
 {% block content %}
     <div class="results-container">
-        <h1 class="futuristic-title">Результаты</h1>
+        <h1 class="futuristic-title">Quiz Results</h1>
 
-        <div class="score-card">
-            <div class="score">Правильных ответов: <span>{{ score }}/{{ total }}</span></div>
-            <div class="percentage">Точность: <span>{{ (score/total*100)|round(1) }}%</span></div>
+        <div class="results-summary">
+            <h2>{{ score }} / {{ total }} Correct ({{ (score/total*100)|round }}%)</h2>
+            <a href="{{ url_for('learn_api.timed_quiz', group_id=current_group.id if current_group else None) }}"
+               class="futuristic-btn">Try Again</a>
         </div>
 
-        <div class="actions">
-            <a href="{{ url_for('timed_quiz', group_id=group_id) }}" class="futuristic-btn">
-                ⟳ Попробовать снова
-            </a>
-            <a href="{{ url_for('learn') }}" class="futuristic-btn secondary">
-                ← Назад к обучению
-            </a>
+        <div class="answers-review">
+            {% for result in results %}
+                <div class="answer {% if result.is_correct %}correct{% else %}incorrect{% endif %}">
+                    <div class="question">
+                        <span class="word">{{ result.word.original }}</span>
+                        <span class="correct-answer">{{ result.word.equivalent }}</span>
+                    </div>
+                    <div class="user-answer">
+                        Your answer: {{ result.user_answer or "—" }}
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
+
     <style>
         .results-container {
-            max-width: 500px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+        .results-summary {
             text-align: center;
-        }
-
-        .score-card {
-            background-color: var(--card-bg);
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
             border-radius: 8px;
-            padding: 25px;
-            margin: 25px 0;
-            box-shadow: 0 4px 6px var(--shadow-color);
         }
 
-        .score, .percentage {
-            font-size: 1.3rem;
-            margin: 15px 0;
+        .answers-review {
+            display: grid;
+            gap: 15px;
         }
 
-        .score span, .percentage span {
-            color: var(--accent-color);
+        .answer {
+            padding: 15px;
+            border-radius: 8px;
+            background: var(--card-bg);
+        }
+
+        .answer.correct {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .answer.incorrect {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .question {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .word {
             font-weight: bold;
         }
 
-        .actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
+        .correct-answer {
+            color: var(--success-color);
         }
 
-        .secondary {
-            background-color: var(--secondary-color);
-            color: var(--text-color);
+        .user-answer {
+            color: var(--text-light);
+            font-size: 0.9rem;
         }
     </style>
 {% endblock %}

@@ -14,6 +14,7 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128), nullable=False)  # Храним только хэш
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     theme = db.Column(db.String(10), default='light')
+
     stats = db.relationship('UserStats', backref='user', lazy=True)
     word_groups = db.relationship('WordGroup', backref='creator', lazy=True)
 
@@ -37,7 +38,7 @@ class WordGroup(db.Model):
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     parent_group_id = db.Column(db.Integer, db.ForeignKey('word_group.id'))
-    parent = db.relationship('WordGroup', remote_side=[id], backref='subgroups')
+    parent = db.relationship('WordGroup', remote_side=[id], backref=db.backref('child_groups', lazy='dynamic'))
     words = db.relationship('Word', backref='group', lazy=True)
 
 

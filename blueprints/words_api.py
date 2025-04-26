@@ -38,11 +38,10 @@ def create_word() -> Response:
     if not word_form.validate_on_submit() or 'original' not in request.form:
         flash('Adding error!', 'error')
         return redirect('/words')
-    word = Word(
-        original=word_form.original.data,
-        equivalent=word_form.equivalent.data,
-        group_id=word_form.group.data
-    )
+    word = Word()
+    word.original = word_form.original.data
+    word.equivalent = word_form.equivalent.data
+    word.group_id = word_form.group.data
     db.session.add(word)
     db.session.commit()
     flash('The word was added successfully!', 'success')
@@ -65,7 +64,7 @@ def delete_word() -> Response:
     db.session.delete(word)
     db.session.commit()
     flash('The word was deleted successfully!', 'success')
-    return redirect(url_for('words'))
+    return redirect('/words')
 
 
 @blueprint.route('/group', methods=['POST'])
@@ -76,17 +75,16 @@ def create_group() -> Response:
     group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
     if not group_form.validate_on_submit() or 'name' not in request.form:
         flash('Adding error!', 'error')
-        return redirect(url_for('words'))
+        return redirect('/words')
     parent_id = group_form.parent_group.data if group_form.parent_group.data != 0 else None
-    group = WordGroup(
-        name=group_form.name.data,
-        user_id=current_user.id,
-        parent_group_id=parent_id
-    )
+    group = WordGroup()
+    group.name = group_form.name.data
+    group.user_id = current_user.id
+    group.parent_group_id = parent_id
     db.session.add(group)
     db.session.commit()
     flash('The group was created successfully!', 'success')
-    return redirect(url_for('words'))
+    return redirect('/words')
 
 
 @blueprint.route('/group-delete', methods=['POST'])
@@ -96,7 +94,7 @@ def delete_group() -> Response:
     groups = WordGroup.query.filter_by(user_id=current_user.id).all()
     group_form.parent_group.choices = [(0, 'None')] + [(group.id, group.name) for group in groups]
     if 'delete_group' not in request.form:
-        return redirect(url_for('words'))
+        return redirect('/words')
     group_id = request.form['delete_group']
     group = WordGroup.query.filter_by(
         id=group_id,
@@ -105,9 +103,9 @@ def delete_group() -> Response:
 
     if not group:
         flash('The group was not found or there are no rights to delete it.', 'error')
-        return redirect(url_for('words'))
+        return redirect('/words')
     Word.query.filter_by(group_id=group.id).delete()
     db.session.delete(group)
     db.session.commit()
     flash('The group and all its words have been deleted successfully!', 'success')
-    return redirect(url_for('words'))
+    return redirect('/words')

@@ -3,82 +3,174 @@
 
 {% block content %}
     <div class="quiz-container">
-        <h1 class="futuristic-title">Equivalent Challenge</h1>
-        <h3>У вас есть 15 секунд на все ответы!</h3>
+        <h1 class="futuristic-title">Timed Quiz</h1>
 
-        <!-- Авто-отправка через 15 секунд -->
-        <meta http-equiv="refresh" content="15;url={{ url_for('learn_api.timed_quiz', group_id=group_id) }}">
-
-        <div class="time-warning">
-            <p>⏱️ Форма отправится автоматически через 15 секунд!</p>
+        <div class="quiz-info">
+            {% if current_group %}
+                <div class="group-info">
+                    <h3>Quiz Group: {{ current_group.name }}</h3>
+                    <p>Total words: {{ words|length }} (including subgroups)</p>
+                </div>
+            {% endif %}
+            <div class="time-tracker">
+                <div id="countdown">15</div>
+                <div class="progress-bar"></div>
+            </div>
         </div>
 
-        <form method="POST" action="{{ url_for('learn_api.timed_quiz', group_id=group_id) }}">
-            <div class="quiz-words">
+        <form method="POST" action="{{ url_for('learn_api.timed_quiz', group_id=group_id) }}" id="quizForm">
+            <div class="quiz-grid">
                 {% for word in words %}
                     <div class="quiz-item">
-                        <div class="word-original">{{ word.original }}</div>
+                        <div class="word-header">
+                            <div class="word-original">{{ word.original }}</div>
+                            <div class="word-number">{{ loop.index }}</div>
+                        </div>
                         <input type="text"
                                name="word_{{ word.id }}"
                                class="form-input"
-                               placeholder="Введите перевод..."
-                               required
-                               autofocus{% if loop.first %} autofocus{% endif %}>
+                               placeholder="Translation..."
+                               value="{{ session['user_answers'].get(word.id|string, '') }}"
+                               required>
                     </div>
                 {% endfor %}
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="futuristic-btn">Проверить ответы</button>
+                <button type="submit" class="futuristic-btn">Submit Answers</button>
             </div>
         </form>
     </div>
+
+    <script>
+        let timeLeft = 15;
+        const countdownEl = document.getElementById('countdown');
+        const formEl = document.getElementById('quizForm');
+        const timer = setInterval(() => {
+            timeLeft--;
+            countdownEl.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                formEl.submit();
+            }
+        }, 1000);
+    </script>
+
     <style>
         .quiz-container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        .time-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 15px 0;
+        .quiz-header {
+            margin-bottom: 30px;
             text-align: center;
-            border-left: 4px solid #ffeeba;
         }
 
-        .quiz-words {
-            display: grid;
-            gap: 15px;
+        .group-info {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
         }
 
+        .time-tracker {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-color);
+            animation: progress 15s linear forwards;
+        }
+
+        @keyframes progress {
+            from {
+                transform: scaleX(1);
+            }
+            to {
+                transform: scaleX(0);
+            }
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
         .quiz-item {
-            background-color: var(--card-bg);
+            background: var(--card-bg);
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px var(--shadow-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .word-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .word-number {
+            background: var(--accent-color);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
         }
 
         .word-original {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: var(--accent-color);
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
         }
 
         .form-actions {
             text-align: center;
-            margin-top: 20px;
         }
+        /* Добавить в стили */
+    #countdown {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--accent-color);
+        text-align: center;
+        margin: 10px 0;
+    }
 
-        .form-input {
-            width: 100%;
-            padding: 10px;
-            font-size: 1rem;
-        }
+    @keyframes progress {
+        from { width: 100%; }
+        to { width: 0; }
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: var(--accent-color);
+        animation: progress 15s linear forwards;
+    }
     </style>
 {% endblock %}

@@ -1,4 +1,4 @@
-from models import User, db
+from models import User, db, UserStats
 
 
 def migrate_users():
@@ -11,12 +11,21 @@ def migrate_users():
         .set_password("123")
     )
     db.session.add(
+        UserStats(
+            user_id=1
+        )
+    )
+    db.session.add(
         User(
             username='Ilya',
             email='ilya@mail.ru',
             theme='light',
         )
         .set_password("123")
+    )
+    db.session.add(UserStats(
+        user_id=2
+    )
     )
     db.session.add(
         User(
@@ -26,6 +35,10 @@ def migrate_users():
         )
         .set_password("123")
     )
+    db.session.add(UserStats(
+        user_id=3
+    )
+    )
     db.session.add(
         User(
             username='Danyil',
@@ -33,6 +46,10 @@ def migrate_users():
             theme='light',
         )
         .set_password("123")
-    )
 
+    )
+    db.session.add(UserStats(
+        user_id=4
+    )
+    )
     db.session.commit()
