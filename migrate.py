@@ -20,4 +20,3 @@ if __name__ == '__main__':
             db.session.rollback()
         migrate_word_groups()
         migrate_words()
-

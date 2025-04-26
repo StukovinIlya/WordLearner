@@ -6,17 +6,17 @@
         <h1 class="futuristic-title">Writing Practice</h1>
 
         <div class="writing-controls">
-            <a href="{{ url_for('learn') }}" class="futuristic-btn">Back to Learning</a>
+            <a href="{{ url_for('learn_api.learn') }}" class="futuristic-btn">Back to Learning</a>
         </div>
 
         {% if show_results %}
             <div class="results-summary">
                 <h3>Results: {{ correct_count }} out of {{ total_words }} correct</h3>
-                <a href="{{ url_for('writing_practice', group_id=group_id) }}" class="futuristic-btn">Try Again</a>
+                <a href="{{ url_for('learn_api.writing_practice', group_id=group_id) }}" class="futuristic-btn">Try Again</a>
             </div>
         {% endif %}
 
-        <form method="POST" action="{{ url_for('writing_practice', group_id=group_id) }}" class="writing-form">
+        <form method="POST" action="{{ url_for('learn_api.writing_practice', group_id=group_id) }}" class="writing-form">
             {% for word in words %}
                 <div class="writing-question">
                     <h4>{{ word.original }}</h4>

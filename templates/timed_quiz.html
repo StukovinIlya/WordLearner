@@ -7,13 +7,13 @@
         <h3>У вас есть 15 секунд на все ответы!</h3>
 
         <!-- Авто-отправка через 15 секунд -->
-        <meta http-equiv="refresh" content="15;url={{ url_for('timed_quiz', group_id=group_id) }}">
+        <meta http-equiv="refresh" content="15;url={{ url_for('learn_api.timed_quiz', group_id=group_id) }}">
 
         <div class="time-warning">
             <p>⏱️ Форма отправится автоматически через 15 секунд!</p>
         </div>
 
-        <form method="POST" action="{{ url_for('timed_quiz', group_id=group_id) }}">
+        <form method="POST" action="{{ url_for('learn_api.timed_quiz', group_id=group_id) }}">
             <div class="quiz-words">
                 {% for word in words %}
                     <div class="quiz-item">

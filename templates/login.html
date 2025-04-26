@@ -3,7 +3,7 @@
 {% block content %}
     <div class="login-container">
         <h2>Login</h2>
-        <form method="POST" action="{{ url_for('login') }}">
+        <form method="POST" action="{{ url_for('home_api.login') }}">
             {{ form.hidden_tag() }}
 
             <div class="form-group">

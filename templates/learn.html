@@ -20,25 +20,25 @@
     <div class="option-card">
         <h3>Times Quiz</h3>
         <p>15 секунд на все ответы!</p>
-        <a href="{{ url_for('timed_quiz', group_id=group_id) }}" class="futuristic-btn">Начать</a>
+        <a href="{{ url_for('learn_api.timed_quiz', group_id=group_id) }}" class="futuristic-btn">Начать</a>
     </div>
     <div class="learning-options">
         <div class="option-card">
             <h3>Flashcards</h3>
             <p>Learn with interactive flashcards.</p>
-            <a href="{{ url_for('flashcards', group_id=selected_group) }}" class="futuristic-btn">Start</a>
+            <a href="{{ url_for('learn_api.flashcards', group_id=selected_group) }}" class="futuristic-btn">Start</a>
         </div>
 
         <div class="option-card">
             <h3>Quiz</h3>
             <p>Test your knowledge with a quiz.</p>
-            <a href="{{ url_for('quiz', group_id=selected_group) }}" class="futuristic-btn">Start</a>
+            <a href="{{ url_for('learn_api.quiz', group_id=selected_group) }}" class="futuristic-btn">Start</a>
         </div>
 
         <div class="option-card">
             <h3>Writing Practice</h3>
             <p>Practice writing equivalents.</p>
-            <a href="{{ url_for('writing_practice', group_id=selected_group) }}" class="futuristic-btn">Start</a>
+            <a href="{{ url_for('learn_api.writing_practice', group_id=selected_group) }}" class="futuristic-btn">Start</a>
         </div>
     </div>
 </div>

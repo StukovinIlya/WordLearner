@@ -13,14 +13,14 @@
             <div class="logo">WordLearner</div>
             <nav class="futuristic-nav">
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('index') }}" class="nav-link">Home</a>
-                    <a href="{{ url_for('learn') }}" class="nav-link">Learn</a>
-                    <a href="{{ url_for('words') }}" class="nav-link">Words</a>
-                    <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
-                    <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                    <a href="{{ url_for('home_api.index') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('learn_api.learn') }}" class="nav-link">Learn</a>
+                    <a href="{{ url_for('words_api.words') }}" class="nav-link">Words</a>
+                    <a href="{{ url_for('home_api.profile') }}" class="nav-link">Profile</a>
+                    <a href="{{ url_for('home_api.logout') }}" class="nav-link">Logout</a>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="nav-link">Login</a>
-                    <a href="{{ url_for('register') }}" class="nav-link">Register</a>
+                    <a href="{{ url_for('home_api.login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('home_api.register') }}" class="nav-link">Register</a>
                 {% endif %}
             </nav>
         </header>
@@ -42,9 +42,9 @@
         <footer class="futuristic-footer">
     <p>&copy; 2025 WordLearner. All rights reserved.</p>
     <div class="footer-links">
-        <a href="{{ url_for('privacy') }}">Privacy Policy</a>
-        <a href="{{ url_for('terms') }}">Terms of Service</a>
-        <a href="{{ url_for('contact') }}">Contact Us</a>
+        <a href="{{ url_for('home_api.privacy') }}">Privacy Policy</a>
+        <a href="{{ url_for('home_api.terms') }}">Terms of Service</a>
+        <a href="{{ url_for('home_api.contact') }}">Contact Us</a>
     </div>
 </footer>
     </div>

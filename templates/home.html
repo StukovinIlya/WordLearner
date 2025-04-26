@@ -9,19 +9,19 @@
         <div class="dashboard-card">
             <h3>Start Learning</h3>
             <p>Continue your language learning journey.</p>
-            <a href="{{ url_for('learn') }}" class="futuristic-btn">Go to Learning</a>
+            <a href="{{ url_for('learn_api.learn') }}" class="futuristic-btn">Go to Learning</a>
         </div>
 
         <div class="dashboard-card">
             <h3>Manage Words</h3>
             <p>Add, edit or organize your vocabulary.</p>
-            <a href="{{ url_for('words') }}" class="futuristic-btn">Manage Words</a>
+            <a href="{{ url_for('words_api.words') }}" class="futuristic-btn">Manage Words</a>
         </div>
 
         <div class="dashboard-card">
             <h3>Your Progress</h3>
             <p>View your learning statistics.</p>
-            <a href="{{ url_for('profile') }}" class="futuristic-btn">View Profile</a>
+            <a href="{{ url_for('home_api.profile') }}" class="futuristic-btn">View Profile</a>
         </div>
     </div>
 </div>

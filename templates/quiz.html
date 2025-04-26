@@ -9,10 +9,10 @@
             {% if current_group %}
                 <h3>Group: {{ current_group.name }}</h3>
             {% endif %}
-            <a href="{{ url_for('learn') }}" class="futuristic-btn">Back to Learning</a>
+            <a href="{{ url_for('learn_api.learn') }}" class="futuristic-btn">Back to Learning</a>
         </div>
 
-        <form method="POST" action="{{ url_for('quiz', group_id=current_group.id if current_group else None) }}"
+        <form method="POST" action="{{ url_for('learn_api.quiz', group_id=current_group.id if current_group else None) }}"
               class="quiz-form">
             {% for quiz_word in quiz_words %}
                 <div class="quiz-question">
