@@ -9,7 +9,7 @@ def migrate_words():
     db.session.add(
         Word(
             original="apple",
-            translation="яблоко",
+            equivalent="яблоко",
             group_id=english_food.id,
             difficulty=1,
         )
@@ -18,7 +18,7 @@ def migrate_words():
     db.session.add(
         Word(
             original="car",
-            translation="машина",
+            equivalent="машина",
             group_id=english_technology.id,
             difficulty=1,
         )
@@ -27,7 +27,7 @@ def migrate_words():
     db.session.add(
         Word(
         original="water's formula",
-            translation="H2O",
+            equivalent="H2O",
             group_id=chemistry.id,
             difficulty=1,
         )

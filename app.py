@@ -96,7 +96,7 @@ def words():
         if word_form.validate_on_submit() and 'original' in request.form:
             word = Word(
                 original=word_form.original.data,
-                translation=word_form.translation.data,
+                equivalent=word_form.equivalent.data,
                 group_id=word_form.group.data
             )
             db.session.add(word)
@@ -221,7 +221,7 @@ def timed_quiz():
 
         for word in quiz_words:
             user_answer = request.form.get(f'word_{word["id"]}', '').strip().lower()
-            if user_answer == word['translation'].lower():
+            if user_answer == word['equivalent'].lower():
                 score += 1
 
         stats = UserStats.query.filter_by(user_id=current_user.id).first()
@@ -242,7 +242,7 @@ def timed_quiz():
         quiz_words.append({
             'id': word.id,
             'original': word.original,
-            'translation': word.translation
+            'equivalent': word.equivalent
         })
 
     session['quiz_words'] = quiz_words
@@ -299,11 +299,11 @@ def quiz():
             quiz_words.append({
                 'id': word.id,
                 'original': word.original,
-                'correct_answer': word.translation,
+                'correct_answer': word.equivalent,
                 'user_answer': user_answer
             })
 
-            if user_answer == word.translation:
+            if user_answer == word.equivalent:
                 correct_count += 1
                 statistics = UserStats.query.filter_by(user_id=current_user.id).first()
                 if statistics:
@@ -320,14 +320,14 @@ def quiz():
                 Word.group_id == word.group_id
             ).order_by(db.func.random()).limit(3).all()
 
-            answers = [word.translation] + [w.translation for w in wrong_answers]
+            answers = [word.equivalent] + [w.equivalent for w in wrong_answers]
             random.shuffle(answers)
 
             quiz_words.append({
                 'id': word.id,
                 'original': word.original,
                 'answers': answers,
-                'correct_answer': word.translation
+                'correct_answer': word.equivalent
             })
 
     return render_template('quiz.html',
@@ -360,7 +360,7 @@ def writing_practice():
         show_results = True
         for word in words:
             user_answer = request.form.get(f'answer_{word.id}', '').strip()
-            if user_answer.lower() == word.translation.lower():
+            if user_answer.lower() == word.equivalent.lower():
                 correct_count += 1
                 statistics = UserStats.query.filter_by(user_id=current_user.id).first()
                 if statistics:

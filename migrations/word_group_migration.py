@@ -8,6 +8,7 @@ def migrate_word_groups():
         user_id=guest.id,
     )
     db.session.add(english)
+    db.session.commit()
     db.session.add(
         WordGroup(
             name="Food",

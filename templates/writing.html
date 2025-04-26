@@ -23,17 +23,17 @@
                     {% if show_results %}
                         <input type="text" name="answer_{{ word.id }}"
                                value="{{ request.form.get('answer_' ~ word.id, '') }}"
-                               class="form-input {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}correct-input{% else %}incorrect-input{% endif %}"
+                               class="form-input {% if request.form.get('answer_' ~ word.id, '').lower() == word.equivalent.lower() %}correct-input{% else %}incorrect-input{% endif %}"
                                readonly>
-                        <div class="result-message {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}correct-answer{% else %}incorrect-answer{% endif %}">
-                            {% if request.form.get('answer_' ~ word.id, '').lower() == word.translation.lower() %}
+                        <div class="result-message {% if request.form.get('answer_' ~ word.id, '').lower() == word.equivalent.lower() %}correct-answer{% else %}incorrect-answer{% endif %}">
+                            {% if request.form.get('answer_' ~ word.id, '').lower() == word.equivalent.lower() %}
                                 ✓ Correct!
                             {% else %}
-                                ✗ Correct answer: {{ word.translation }}
+                                ✗ Correct answer: {{ word.equivalent }}
                             {% endif %}
                         </div>
                     {% else %}
-                        <input type="text" name="answer_{{ word.id }}" placeholder="Type the translation..."
+                        <input type="text" name="answer_{{ word.id }}" placeholder="Type the equivalent..."
                                class="form-input" required>
                     {% endif %}
                 </div>

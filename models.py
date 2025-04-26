@@ -2,7 +2,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 
-from sa.annotated.pandas import unique
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
@@ -38,7 +37,6 @@ class WordGroup(db.Model):
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     parent_group_id = db.Column(db.Integer, db.ForeignKey('word_group.id'))
-
     parent = db.relationship('WordGroup', remote_side=[id], backref='subgroups')
     words = db.relationship('Word', backref='group', lazy=True)
 
@@ -46,7 +44,7 @@ class WordGroup(db.Model):
 class Word(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     original = db.Column(db.String(100), nullable=False)
-    translation = db.Column(db.String(100), nullable=False)
+    equivalent = db.Column(db.String(100), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('word_group.id'), nullable=False)
     added_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_reviewed = db.Column(db.DateTime, nullable=True)

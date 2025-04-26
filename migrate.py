@@ -18,5 +18,6 @@ if __name__ == '__main__':
             migrate_users()
         except IntegrityError:
             db.session.rollback()
-        migrate_words()
         migrate_word_groups()
+        migrate_words()
+

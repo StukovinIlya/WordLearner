@@ -8,7 +8,7 @@
         <div class="words-management">
             <div class="words-form">
                 <h3>Add New Word</h3>
-                <form method="POST" action="">
+                <form method="POST" action="/word">
                     {{ word_form.hidden_tag() }}
 
                     <div class="form-group">
@@ -20,9 +20,9 @@
                     </div>
 
                     <div class="form-group">
-                        {{ word_form.translation.label(class="form-label") }}
-                        {{ word_form.translation(class="form-input") }}
-                        {% for error in word_form.translation.errors %}
+                        {{ word_form.equivalent.label(class="form-label") }}
+                        {{ word_form.equivalent(class="form-input") }}
+                        {% for error in word_form.equivalent.errors %}
                             <span class="error">{{ error }}</span>
                         {% endfor %}
                     </div>
@@ -43,7 +43,7 @@
 
             <div class="group-form">
                 <h3>Create New Group</h3>
-                <form method="POST" action="">
+                <form method="POST" action="/group">
                     {{ group_form.hidden_tag() }}
 
                     <div class="form-group">
@@ -77,7 +77,7 @@
                     <thead>
                     <tr>
                         <th>Original</th>
-                        <th>Translation</th>
+                        <th>Equivalent</th>
                         <th>Group</th>
                         <th>Actions</th>
                     </tr>
@@ -86,10 +86,10 @@
                     {% for word in words %}
                         <tr>
                             <td>{{ word.original }}</td>
-                            <td>{{ word.translation }}</td>
+                            <td>{{ word.equivalent }}</td>
                             <td>{{ word.group.name }}</td>
                             <td>
-                                <form method="POST" action="{{ url_for('words') }}" style="display: inline;">
+                                <form method="DELETE" action="word" style="display: inline;">
                                     <input type="hidden" name="delete_word" value="{{ word.id }}">
                                     <button type="submit" class="action-btn delete"
                                             onclick="return confirm('Are you sure you want to delete this word?')">
