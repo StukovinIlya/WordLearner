@@ -13,9 +13,9 @@
             <div class="logo">WordLearner</div>
             <nav class="futuristic-nav">
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('home_api.index') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('home_api.home') }}" class="nav-link">Home</a>
                     <a href="{{ url_for('learn_api.learn') }}" class="nav-link">Learn</a>
-                    <a href="{{ url_for('words_api.words') }}" class="nav-link">Words</a>
+                    <a href="{{ url_for('words_api.get_words') }}" class="nav-link">Words</a>
                     <a href="{{ url_for('home_api.profile') }}" class="nav-link">Profile</a>
                     <a href="{{ url_for('home_api.logout') }}" class="nav-link">Logout</a>
                 {% else %}

@@ -15,7 +15,7 @@ blueprint = flask.Blueprint(
 
 
 @blueprint.route('/')
-def home():
+def index():
     if current_user.is_authenticated:
         return redirect('home')
     return redirect('/login', code=301)
@@ -23,7 +23,7 @@ def home():
 
 @blueprint.route('/home')
 @login_required
-def index():
+def home():
     return render_template('home.html')
 
 

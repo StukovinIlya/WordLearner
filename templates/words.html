@@ -8,7 +8,7 @@
     <div class="words-management">
         <div class="words-form">
             <h3>Add New Word</h3>
-            <form method="POST" action="/word">
+            <form method="POST" action="{{ url_for('words_api.create_word') }}">
                 {{ word_form.hidden_tag() }}
 
                 <div class="form-group">
