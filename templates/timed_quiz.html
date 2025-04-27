@@ -5,26 +5,34 @@
     <div class="quiz-container">
         <h1 class="futuristic-title">Timed Quiz</h1>
 
-        <div class="quiz-info">
-            {% if current_group %}
-                <div class="group-info">
-                    <h3>Quiz Group: {{ current_group.name }}</h3>
-                    <p>Total words: {{ words|length }} (including subgroups)</p>
-                </div>
-            {% endif %}
-            <div class="time-tracker">
-                <div id="countdown">15</div>
-                <div class="progress-bar"></div>
+        <div class="quiz-controls">
+            <a href="{{ url_for('learn_api.learn') }}" class="futuristic-btn">Back to Learning</a>
+
+            <div class="quiz-info">
+                {% if current_group %}
+                    <div class="group-info">
+                        <h3>Quiz Group: {{ current_group.name }}</h3>
+                        <p>Total words: {{ words|length }} (including subgroups)</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
-        <form method="POST" action="{{ url_for('learn_api.timed_quiz', group_id=group_id) }}" id="quizForm">
+        <div class="time-tracker">
+            <div id="countdown">15</div>
+            <div class="progress-bar"></div>
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('learn_api.timed_quiz', group_id=current_group.id if current_group else None) }}"
+              id="quizForm">
             <div class="quiz-grid">
                 {% for word in words %}
                     <div class="quiz-item">
                         <div class="word-header">
                             <div class="word-original">{{ word.original }}</div>
                             <div class="word-number">{{ loop.index }}</div>
+                            <div class="difficulty-badge">Difficulty: {{ word.difficulty }}</div>
                         </div>
                         <input type="text"
                                name="word_{{ word.id }}"
@@ -32,6 +40,7 @@
                                placeholder="Translation..."
                                value="{{ session['user_answers'].get(word.id|string, '') }}"
                                required>
+                        <input type="hidden" name="word_difficulty_{{ word.id }}" value="{{ word.difficulty }}">
                     </div>
                 {% endfor %}
             </div>
@@ -63,44 +72,62 @@
             padding: 20px;
         }
 
-        .quiz-header {
-            margin-bottom: 30px;
-            text-align: center;
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .quiz-info {
+            flex-grow: 1;
         }
 
         .group-info {
             background: var(--card-bg);
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .group-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+        }
+
+        .group-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-light);
         }
 
         .time-tracker {
             margin: 20px 0;
         }
 
-        .progress-bar {
-            height: 8px;
-            background: #f0f0f0;
-            border-radius: 4px;
-            overflow: hidden;
+        #countdown {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+            margin: 10px 0;
         }
 
-        .progress-bar::after {
-            content: '';
-            display: block;
-            width: 100%;
-            height: 100%;
+        .progress-bar {
+            height: 8px;
             background: var(--accent-color);
             animation: progress 15s linear forwards;
+            border-radius: 4px;
         }
 
         @keyframes progress {
             from {
-                transform: scaleX(1);
+                width: 100%;
             }
             to {
-                transform: scaleX(0);
+                width: 0;
             }
         }
 
@@ -140,9 +167,18 @@
         .word-original {
             margin: 0;
             font-size: 1.1rem;
+            flex-grow: 1;
         }
 
-        input[type="text"] {
+        .difficulty-badge {
+            background-color: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #555;
+        }
+
+        .form-input {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
@@ -153,24 +189,17 @@
         .form-actions {
             text-align: center;
         }
-        /* Добавить в стили */
-    #countdown {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: var(--accent-color);
-        text-align: center;
-        margin: 10px 0;
-    }
 
-    @keyframes progress {
-        from { width: 100%; }
-        to { width: 0; }
-    }
+        @media (max-width: 768px) {
+            .quiz-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-    .progress-bar {
-        height: 8px;
-        background: var(--accent-color);
-        animation: progress 15s linear forwards;
-    }
+            .group-info {
+                text-align: left;
+                width: 100%;
+            }
+        }
     </style>
 {% endblock %}

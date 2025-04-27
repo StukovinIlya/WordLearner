@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_login import LoginManager
-
 from blueprints import home_api, learn_api, words_api
 from models import db, User
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'WordLearner-SECRET_KEY'

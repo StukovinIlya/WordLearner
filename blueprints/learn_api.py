@@ -29,6 +29,7 @@ def timed_quiz():
     current_group = WordGroup.query.get(group_id) if group_id else None
     show_results = request.args.get('results', False, type=bool)
     words = []
+
     if group_id and current_group:
         def get_all_words_in_group(group):
             words = group.words.copy()
@@ -39,25 +40,43 @@ def timed_quiz():
         words = get_all_words_in_group(current_group)
     else:
         words = Word.query.join(WordGroup).filter(WordGroup.user_id == current_user.id).all()
+
     if not words:
         flash('No words found. Add words first.', 'warning')
         return redirect(url_for('words_api.get_words'))
+
     if show_results:
         score = 0
         quiz_words = session.get('quiz_words', [])
         user_answers = session.get('user_answers', {})
+        word_difficulties = session.get('word_difficulties', {})
 
         results = []
-        for word in quiz_words:
-            user_answer = user_answers.get(str(word['id']), '').strip().lower()
-            is_correct = user_answer == word['equivalent'].lower()
+        for word_data in quiz_words:
+            word = Word.query.get(word_data['id'])
+            if not word:
+                continue
+
+            user_answer = user_answers.get(str(word.id), '').strip().lower()
+            is_correct = user_answer == word.equivalent.lower()
+
+            original_difficulty = word_difficulties.get(str(word.id), word.difficulty)
             if is_correct:
+                word.difficulty = min(original_difficulty + 1, 100)
                 score += 1
+            else:
+                decade = (100 - word.difficulty) // 10
+                subtract_value = 2 ** min(decade, 3)
+                word.difficulty = max(original_difficulty - subtract_value, 1)
+
             results.append({
-                'word': word,
+                'word': word_data,
                 'user_answer': user_answer,
-                'is_correct': is_correct
+                'is_correct': is_correct,
+                'new_difficulty': word.difficulty
             })
+
+        db.session.commit()
 
         stats = UserStats.query.filter_by(user_id=current_user.id).first()
         if stats:
@@ -76,16 +95,23 @@ def timed_quiz():
             key[5:]: value for key, value in request.form.items()
             if key.startswith('word_')
         }
+        session['word_difficulties'] = {
+            key[16:]: int(value) for key, value in request.form.items()
+            if key.startswith('word_difficulty_')
+        }
         return redirect(url_for('learn_api.timed_quiz', results=True, group_id=group_id))
 
     quiz_words = [{
         'id': word.id,
         'original': word.original,
-        'equivalent': word.equivalent
-    } for word in random.sample(words, min(15, len(words)))]
+        'equivalent': word.equivalent,
+        'difficulty': word.difficulty
+    } for word in random.sample(words, min(3, len(words)))]
 
     session['quiz_words'] = quiz_words
     session['user_answers'] = {}
+    session['word_difficulties'] = {str(word['id']): word['difficulty'] for word in quiz_words}
+
     return render_template('timed_quiz.html',
                            words=quiz_words,
                            current_group=current_group)
@@ -152,19 +178,31 @@ def quiz():
 
         for word in words:
             user_answer = request.form.get(f'word_{word.id}')
+            is_correct = (user_answer == word.equivalent)
+
+            if is_correct:
+
+                word.difficulty = min(word.difficulty + 1, 100)
+                correct_count += 1
+            else:
+                decade = (100 - word.difficulty) // 10
+                subtract_value = 2 ** min(decade, 3)
+                word.difficulty = max(word.difficulty - subtract_value, 1)
+
+            statistics = UserStats.query.filter_by(user_id=current_user.id).first()
+            if statistics:
+                if is_correct:
+                    statistics.words_learned += 1
+                statistics.last_activity = datetime.utcnow()
+
             quiz_words.append({
                 'id': word.id,
                 'original': word.original,
                 'correct_answer': word.equivalent,
-                'user_answer': user_answer
+                'user_answer': user_answer,
+                'answers': request.form.getlist(f'answers_{word.id}'),
+                'difficulty': word.difficulty
             })
-
-            if user_answer == word.equivalent:
-                correct_count += 1
-                statistics = UserStats.query.filter_by(user_id=current_user.id).first()
-                if statistics:
-                    statistics.words_learned += 1
-                    statistics.last_activity = datetime.utcnow()
 
         db.session.commit()
         flash(f'You got {correct_count} out of {len(words)} correct!', 'info')
@@ -185,7 +223,8 @@ def quiz():
                 'id': word.id,
                 'original': word.original,
                 'answers': answers,
-                'correct_answer': word.equivalent
+                'correct_answer': word.equivalent,
+                'difficulty': word.difficulty
             })
 
     return render_template('quiz.html',
@@ -200,6 +239,7 @@ def writing_practice():
     group_id = request.args.get('group_id', type=int)
     if request.method == 'POST':
         group_id = request.form.get('group_id', type=int)
+
     words = []
     show_results = False
     correct_count = 0
@@ -227,43 +267,57 @@ def writing_practice():
         show_results = True
         for word in words:
             user_answer = request.form.get(f'answer_{word.id}', '').strip()
-            if user_answer.lower() == word.equivalent.lower():
+            is_correct = user_answer.lower() == word.equivalent.lower()
+
+            if is_correct:
+                word.difficulty = min(word.difficulty + 1, 100)
                 correct_count += 1
-                # Обновляем статистику
-                statistics = UserStats.query.filter_by(user_id=current_user.id).first()
-                if statistics:
-                    statistics.words_learned += 1
-                    statistics.last_activity = datetime.utcnow()
+            else:
+                decade = (100 - word.difficulty) // 10
+                subtract_value = 2 ** min(decade, 3)
+                word.difficulty = max(word.difficulty - subtract_value, 1)
+
+            statistics = UserStats.query.filter_by(user_id=current_user.id).first()
+            if statistics and is_correct:
+                statistics.words_learned += 1
+                statistics.last_activity = datetime.utcnow()
 
         db.session.commit()
 
     return render_template('writing.html',
                            words=words,
                            current_group=current_group,
-                           group_id=group_id,  # Важно передать для формы
+                           group_id=group_id,
                            show_results=show_results,
                            correct_count=correct_count,
                            total_words=total_words)
 
 
 @blueprint.route('/check_answer', methods=['POST'])
-@login_required
 def check_answer():
     word_id = request.form.get('word_id')
-    user_answer = request.form.get('answer', '').strip()
+    user_answer = request.form.get(f'word_{word_id}')
 
-    word = Word.query.get_or_404(word_id)
+    word = Word.query.get(word_id)
 
-    is_correct = user_answer.lower() == word.translation.lower()
+    if not word:
+        return "Word not found", 404
+
+    is_correct = (user_answer == word.translation)
 
     if is_correct:
-        stats = UserStats.query.filter_by(user_id=current_user.id).first()
-        if stats:
-            stats.words_learned += 1
-            stats.last_activity = datetime.utcnow()
-            db.session.commit()
+        word.difficulty = min(word.difficulty + 1, 100)
+    else:
+        decade = (100 - word.difficulty) // 10
+        subtract_value = 2 ** decade
 
+        word.difficulty = max(word.difficulty - subtract_value, 1)
+
+    db.session.commit()
+
+    # Возвращаем результат
     return jsonify({
         'correct': is_correct,
-        'correct_answer': word.translation
+        'correct_answer': word.translation,
+        'new_difficulty': word.difficulty
     })

@@ -7,6 +7,8 @@ def migrate_users():
             username='Guest',
             email='demo@gmail.com',
             theme='light',
+            ip_address='127.0.0.1',
+            offset=0
         )
         .set_password("123")
     )
@@ -20,6 +22,8 @@ def migrate_users():
             username='Ilya',
             email='ilya@mail.ru',
             theme='light',
+            ip_address='00',
+            offset=0
         )
         .set_password("123")
     )
@@ -32,6 +36,8 @@ def migrate_users():
             username='Andrey',
             email='andrey@mail.ru',
             theme='dark',
+            ip_address='127.0.0.1',
+            offset=0
         )
         .set_password("123")
     )
@@ -44,6 +50,8 @@ def migrate_users():
             username='Danyil',
             email='danyil@gmail.com',
             theme='light',
+            ip_address='127.0.0.1',
+            offset=0
         )
         .set_password("123")
 

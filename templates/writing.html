@@ -34,9 +34,13 @@
             {% for word in words %}
                 <div class="writing-question">
                     <div class="question-header">
-                        <h4>{{ word.original }}</h4>
+                        <div>
+                            <h4>{{ word.original }}</h4>
+                            <span class="difficulty-badge">Difficulty: {{ 100 - word.difficulty }}</span>
+                        </div>
                         <span class="group-tag">{{ word.group.name }}</span>
                     </div>
+
                     {% if show_results %}
                         <input type="text" name="answer_{{ word.id }}"
                                value="{{ request.form.get('answer_' ~ word.id, '') }}"
@@ -44,14 +48,17 @@
                                readonly>
                         <div class="result-message {% if request.form.get('answer_' ~ word.id, '').lower() == word.equivalent.lower() %}correct-answer{% else %}incorrect-answer{% endif %}">
                             {% if request.form.get('answer_' ~ word.id, '').lower() == word.equivalent.lower() %}
-                                ✓ Correct!
+                                ✓ Correct! (New difficulty: {{ 100 - word.difficulty }})
                             {% else %}
-                                ✗ Correct answer: <strong>{{ word.equivalent }}</strong>
+                                ✗ Correct answer: <strong>{{ word.equivalent }}</strong> (New difficulty:
+                                {{ 100 - word.difficulty }})
                             {% endif %}
                         </div>
                     {% else %}
                         <input type="text" name="answer_{{ word.id }}" placeholder="Type the equivalent..."
                                class="form-input" required>
+                        <input type="hidden" name="original_difficulty_{{ word.id }}"
+                               value="{{ 100 -word.difficulty }}">
                     {% endif %}
                 </div>
             {% endfor %}
@@ -63,7 +70,37 @@
             {% endif %}
         </form>
     </div>
+
     <style>
+        /* ... (существующие стили остаются без изменений) ... */
+
+        .difficulty-badge {
+            background-color: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #555;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .question-header > div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 768px) {
+            .question-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .group-tag {
+                align-self: flex-start;
+            }
+        }
+
         .writing-controls {
             display: flex;
             justify-content: space-between;

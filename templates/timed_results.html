@@ -17,6 +17,7 @@
                     <div class="question">
                         <span class="word">{{ result.word.original }}</span>
                         <span class="correct-answer">{{ result.word.equivalent }}</span>
+                        <span class="new-difficulty">New difficulty: {{ result.new_difficulty }}</span>
                     </div>
                     <div class="user-answer">
                         Your answer: {{ result.user_answer or "—" }}
@@ -77,6 +78,12 @@
         .user-answer {
             color: var(--text-light);
             font-size: 0.9rem;
+        }
+
+        .new-difficulty {
+            font-size: 0.9em;
+            color: #666;
+            margin-left: 10px;
         }
     </style>
 {% endblock %}
