@@ -28,7 +28,7 @@ def index():
 @blueprint.route('/home')
 @login_required
 def home():
-    return render_template('home.html')
+    return render_template('index.html')
 
 
 @blueprint.route('/login', methods=['GET', 'POST'])
@@ -96,7 +96,7 @@ def logout():
         user.ip_address = ip_address
         db.session.commit()
     logout_user()
-    return render_template('home.html')
+    return render_template('index.html')
 
 
 @blueprint.route('/profile', methods=['GET', 'POST'])
